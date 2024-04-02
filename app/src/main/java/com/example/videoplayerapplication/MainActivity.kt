@@ -3,13 +3,13 @@ package com.example.videoplayerapplication
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.videoplayerapplication.screens.MainScreen
+import com.example.videoplayerapplication.screens.PlayerScreen
 import com.example.videoplayerapplication.ui.theme.VideoPlayerApplicationTheme
 
 class MainActivity : ComponentActivity() {
@@ -17,30 +17,16 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             VideoPlayerApplicationTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    Greeting("Android")
+                Surface(color = MaterialTheme.colorScheme.background) {
+                    val navController = rememberNavController()
+                    NavHost(navController = navController, startDestination = "mainScreen") {
+                        composable("mainScreen") { MainScreen(navController) }
+                        composable("playerScreen/{videoUri}") { backStackEntry ->
+                            PlayerScreen(videoUri = backStackEntry.arguments?.getString("videoUri") ?: "")
+                        }
+                    }
                 }
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    VideoPlayerApplicationTheme {
-        Greeting("Android")
     }
 }
