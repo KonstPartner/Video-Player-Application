@@ -15,27 +15,23 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
+// Theme.kt
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = DarkPrimary,
+    onPrimary = DarkText, // Для текста на темно-синем topBar
+    background = DarkBackground,
+    onBackground = DarkIcon, // Для текста на темно-сером фоне
+    // Укажите остальные цвета по необходимости
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+    primary = LightPrimary,
+    onPrimary = LightText, // Для текста на синем topBar
+    background = LightBackground,
+    onBackground = LightIcon, // Для текста на белом фоне
+    // Укажите остальные цвета по необходимости
 )
+
 
 @Composable
 fun VideoPlayerApplicationTheme(

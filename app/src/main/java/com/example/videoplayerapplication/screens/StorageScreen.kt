@@ -18,12 +18,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.videoplayerapplication.screens.Video
-import com.example.videoplayerapplication.screens.getVideos
 import androidx.compose.ui.platform.LocalContext
 
 @Composable
-fun MainScreen(navController: NavController) {
+fun StorageScreen(navController: NavController) {
     val context = LocalContext.current
     val videos = getVideos(context)
 

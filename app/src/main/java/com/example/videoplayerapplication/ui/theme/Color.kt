@@ -1,11 +1,17 @@
+// Color.kt
 package com.example.videoplayerapplication.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+// Существующие цвета можно оставить или заменить на свои, если они не будут использоваться
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+// Цвета для светлой темы
+val LightPrimary = Color(0xB20372BB) // Цвет для TopBar и BottomBar
+val LightBackground = Color(0xFFFFFFFF) // Цвет фона
+val LightText = Color(0xFFFFFFFF) // Цвет текста
+val LightIcon = Color(0xFF000000) // Цвет иконки смены темы
+
+val DarkPrimary = Color(0xFF41494B) // Цвет для TopBar и BottomBar
+val DarkBackground = Color(0xFF121212) // Цвет фона
+val DarkText = Color(0xFFFFFFFF) // Цвет текста
+val DarkIcon = Color(0xFFFFFFFF) // Цвет иконки смены темы
