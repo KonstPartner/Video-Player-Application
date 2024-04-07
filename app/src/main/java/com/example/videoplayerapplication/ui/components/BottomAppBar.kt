@@ -15,7 +15,7 @@ fun BottomAppBar() {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(70.dp)
+            .height(56.dp)
             .background(color = MaterialTheme.colorScheme.primary)
     ) {}
 }

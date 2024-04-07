@@ -22,19 +22,16 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            val themeViewModel: ThemeViewModel = viewModel() // Правильное получение ViewModel
-
+            val themeViewModel: ThemeViewModel = viewModel()
             VideoPlayerApplicationTheme(darkTheme = themeViewModel.isDarkTheme.value) {
                 Surface(color = MaterialTheme.colorScheme.background) {
                     val navController = rememberNavController()
                     NavHost(navController = navController, startDestination = "homeScreen") {
                         composable("homeScreen") {
-                            // Передаем themeViewModel в HomeScreen
                             HomeScreen(navController, themeViewModel)
                         }
                         composable("storageScreen") { StorageScreen(navController) }
                         composable("internetScreen") { InternetScreen(navController) }
-                        // Добавьте маршрут для PlayerScreen, если он ещё не добавлен
                         composable("playerScreen/{videoUri}") { backStackEntry ->
                             PlayerScreen(videoUri = backStackEntry.arguments?.getString("videoUri") ?: "")
                         }

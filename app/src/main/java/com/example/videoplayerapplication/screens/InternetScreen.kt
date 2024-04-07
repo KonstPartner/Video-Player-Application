@@ -38,7 +38,6 @@ fun InternetScreen(navController: NavController) {
             keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(
                 onDone = {
-                // Здесь может быть логика проверки URL перед навигацией
                 navController.navigate("streamingScreen/${Uri.encode(videoUrl)}")
                 }),
             modifier = Modifier.fillMaxWidth()
@@ -46,7 +45,6 @@ fun InternetScreen(navController: NavController) {
         Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = {
-                // Здесь может быть логика проверки URL перед навигацией
                 navController.navigate("streamingScreen/${Uri.encode(videoUrl)}")
             },
             modifier = Modifier.align(Alignment.CenterHorizontally)
