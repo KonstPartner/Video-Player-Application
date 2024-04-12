@@ -5,8 +5,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
@@ -29,29 +27,52 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.*
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.ui.text.TextStyle
+import com.example.videoplayerapplication.ui.components.Video
+import com.example.videoplayerapplication.ui.components.getVideos
+import com.example.videoplayerapplication.ui.components.TopAppBar
 import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.delay
+
 
 @Composable
 fun StorageScreen(navController: NavController) {
     val context = LocalContext.current
     var searchText by remember { mutableStateOf("") }
-    val filteredVideos by remember(searchText) {
+    var searchTextDebounced by remember { mutableStateOf("") }
+
+    LaunchedEffect(searchText) {
+        delay(300)
+        searchTextDebounced = searchText
+    }
+
+    val filteredVideos by remember(searchTextDebounced) {
         mutableStateOf(getVideos(context).filter {
-            searchText.isEmpty() || it.title.contains(searchText, ignoreCase = true)
+            searchTextDebounced.isEmpty() || it.title.contains(searchTextDebounced, ignoreCase = true)
         })
     }
 
+    var columns by remember { mutableStateOf(1) }
+
     Scaffold(
         topBar = {
-            com.example.videoplayerapplication.ui.components.TopAppBar(title = "Выбор видео", Icons.Filled.ArrowBack) { navController.navigateUp() }
+            TopAppBar(
+                title = "Выбор видео",
+                navigationIcon = Icons.Filled.ArrowBack,
+                onNavigationIconClick = { navController.navigateUp() },
+                showMenu = true,
+                onChangeColumns = { columns = it }
+            )
         },
         bottomBar = {
             com.example.videoplayerapplication.ui.components.BottomAppBar()
@@ -59,18 +80,16 @@ fun StorageScreen(navController: NavController) {
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
             SearchBar(searchText = searchText, onSearchTextChanged = { searchText = it })
-            LazyColumn {
-                items(filteredVideos) { video ->
-                    VideoItem(video = video, navController = navController)
-                }
-            }
+            VideoGrid(videos = filteredVideos, columns = columns, navController = navController)
         }
     }
 }
 
 
 @Composable
-fun VideoItem(video: Video, navController: NavController) {
+fun VideoItem(video: Video, columns: Int, navController: NavController) {
+    val textStyle = getTextStyleForColumns(columns)
+
     Card(
         modifier = Modifier
             .padding(8.dp)
@@ -81,7 +100,7 @@ fun VideoItem(video: Video, navController: NavController) {
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(5.dp)
         ) {
             video.thumbnail?.let { bitmap ->
                 Box {
@@ -89,7 +108,7 @@ fun VideoItem(video: Video, navController: NavController) {
                         bitmap = bitmap.asImageBitmap(),
                         contentDescription = "Видео эскиз",
                         modifier = Modifier
-                            .height(200.dp)
+                            .aspectRatio(16f / 9f)
                             .fillMaxWidth(),
                         contentScale = ContentScale.Crop
                     )
@@ -115,12 +134,35 @@ fun VideoItem(video: Video, navController: NavController) {
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = video.title,
-                style = MaterialTheme.typography.bodyLarge.copy(color = Color.White),
-                modifier = Modifier.padding(4.dp)
+                style = textStyle,
+                modifier = Modifier.padding(horizontal = 4.dp)
             )
         }
     }
 }
+
+@Composable
+fun VideoGrid(videos: List<Video>, columns: Int, navController: NavController) {
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(columns),
+        contentPadding = PaddingValues(8.dp),
+    ) {
+        items(videos) { video ->
+            VideoItem(video = video, columns, navController)
+        }
+    }
+}
+
+
+@Composable
+fun getTextStyleForColumns(columns: Int): TextStyle {
+    return when (columns) {
+        1 -> MaterialTheme.typography.bodyLarge
+        2 -> MaterialTheme.typography.bodyMedium
+        else -> MaterialTheme.typography.bodySmall
+    }
+}
+
 
 fun formatDuration(durationMs: Long): String {
     val minutes = TimeUnit.MILLISECONDS.toMinutes(durationMs)

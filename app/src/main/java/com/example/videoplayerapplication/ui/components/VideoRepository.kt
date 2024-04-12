@@ -1,4 +1,4 @@
-package com.example.videoplayerapplication.screens
+package com.example.videoplayerapplication.ui.components
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -45,7 +45,7 @@ fun getVideos(context: Context): List<Video> {
 
             val thumbnail = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
                 val uri = Uri.withAppendedPath(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, id.toString())
-                context.contentResolver.loadThumbnail(uri, Size(640, 480), null)
+                context.contentResolver.loadThumbnail(uri, Size(1920, 1080), null)
             } else {
                 null
             }

@@ -3,8 +3,6 @@ package com.example.videoplayerapplication.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Существующие цвета можно оставить или заменить на свои, если они не будут использоваться
-
 // Цвета для светлой темы
 val LightPrimary = Color(0xB20372BB) // Цвет для TopBar и BottomBar
 val LightBackground = Color(0xFFFFFFFF) // Цвет фона

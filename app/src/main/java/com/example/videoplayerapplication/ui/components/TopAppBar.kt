@@ -3,26 +3,83 @@ package com.example.videoplayerapplication.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.Divider
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
+@Composable
+fun CustomDropdownMenu(
+    expanded: Boolean,
+    onDismissRequest: () -> Unit,
+    inColumnSettings: Boolean,
+    onChangeColumns: (Int) -> Unit,
+    onMenuChange: (Boolean) -> Unit
+) {
+    val backgroundColor = MaterialTheme.colorScheme.secondary
+    val textColor = MaterialTheme.colorScheme.onBackground
+    val menuItemHeight = 48.dp
+
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = {
+            onMenuChange(false)
+            onDismissRequest()
+        },
+        modifier = Modifier
+            .width(240.dp)
+            .background(backgroundColor)
+    ) {
+        if (!inColumnSettings) {
+            DropdownMenuItem(
+                text = { Text("Вид", color = textColor) },
+                onClick = { onMenuChange(true) },
+                modifier = Modifier.heightIn(min = menuItemHeight)
+            )
+        } else {
+            DropdownMenuItem(
+                text = { Text("Назад", color = textColor) },
+                onClick = { onMenuChange(false) },
+                modifier = Modifier.heightIn(min = menuItemHeight)
+            )
+            Divider(color = textColor.copy(alpha = 0.2f))
+            listOf(1, 2, 3).forEach { count ->
+                DropdownMenuItem(
+                    text = { Text("$count видео в строке", color = textColor) },
+                    onClick = {
+                        onChangeColumns(count)
+                        onMenuChange(false)
+                        onDismissRequest()
+                    },
+                    modifier = Modifier.heightIn(min = menuItemHeight)
+                )
+                if (count < 3) Divider(color = textColor.copy(alpha = 0.2f))
+            }
+        }
+    }
+}
+
+
+
 
 @Composable
 fun TopAppBar(
     title: String,
-    barIcon: ImageVector,
-    onIconClick: () -> Unit
+    navigationIcon: ImageVector,
+    onNavigationIconClick: () -> Unit,
+    showMenu: Boolean,
+    onChangeColumns: (Int) -> Unit
 ) {
+    var showDropdown by remember { mutableStateOf(false) }
+    var inColumnSettings by remember { mutableStateOf(false) }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -32,9 +89,9 @@ fun TopAppBar(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
-            imageVector = barIcon,
+            imageVector = navigationIcon,
             contentDescription = "Назад",
-            modifier = Modifier.clickable { onIconClick() },
+            modifier = Modifier.clickable { onNavigationIconClick() },
             tint = MaterialTheme.colorScheme.onPrimary
         )
         Spacer(modifier = Modifier.width(16.dp))
@@ -43,10 +100,47 @@ fun TopAppBar(
             color = MaterialTheme.colorScheme.onPrimary,
             style = MaterialTheme.typography.titleLarge,
         )
+        Spacer(Modifier.weight(1f))
+        Box {
+            if (showMenu) {
+                Icon(
+                    imageVector = Icons.Filled.MoreVert,
+                    contentDescription = "Menu",
+                    modifier = Modifier
+                        .clickable { showDropdown = true },
+                    tint = MaterialTheme.colorScheme.onPrimary
+                )
+                CustomDropdownMenu(
+                    expanded = showDropdown,
+                    onDismissRequest = { showDropdown = false },
+                    inColumnSettings = inColumnSettings,
+                    onChangeColumns = onChangeColumns,
+                    onMenuChange = { inColumnSettings = it }
+                )
+            }
+        }
     }
 }
 
-@Composable @Preview
-fun TopAppBarPreview(){
-    TopAppBar("Текст", Icons.Filled.Home){}
+
+@Preview(showBackground = true)
+@Composable
+fun TopAppBarPreview() {
+    MaterialTheme {
+        TopAppBar("Текст", Icons.Filled.Home, {}, true) {}
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun CustomDropdownMenuPreview() {
+    MaterialTheme {
+        CustomDropdownMenu(
+            expanded = true,
+            onDismissRequest = {},
+            inColumnSettings = false,
+            onChangeColumns = {},
+            onMenuChange = {}
+        )
+    }
 }

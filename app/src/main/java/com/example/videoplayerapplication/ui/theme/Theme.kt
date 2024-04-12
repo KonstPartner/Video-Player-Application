@@ -18,18 +18,18 @@ import androidx.core.view.WindowCompat
 // Theme.kt
 private val DarkColorScheme = darkColorScheme(
     primary = DarkPrimary,
-    onPrimary = DarkText, // Для текста на темно-синем topBar
+    onPrimary = DarkText,
     background = DarkBackground,
-    onBackground = DarkIcon, // Для текста на темно-сером фоне
-    // Укажите остальные цвета по необходимости
+    secondary = DarkPrimary,
+    onBackground = DarkIcon
 )
 
 private val LightColorScheme = lightColorScheme(
     primary = LightPrimary,
-    onPrimary = LightText, // Для текста на синем topBar
+    onPrimary = LightText,
     background = LightBackground,
-    onBackground = LightIcon, // Для текста на белом фоне
-    // Укажите остальные цвета по необходимости
+    secondary = LightBackground,
+    onBackground = LightIcon
 )
 
 
