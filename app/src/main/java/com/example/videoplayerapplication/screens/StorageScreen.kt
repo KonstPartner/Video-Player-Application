@@ -38,8 +38,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.ui.text.TextStyle
-import com.example.videoplayerapplication.ui.components.Video
-import com.example.videoplayerapplication.ui.components.getVideos
+import com.example.videoplayerapplication.ui.components.BottomAppBar
 import com.example.videoplayerapplication.ui.components.TopAppBar
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.delay
@@ -75,7 +74,7 @@ fun StorageScreen(navController: NavController) {
             )
         },
         bottomBar = {
-            com.example.videoplayerapplication.ui.components.BottomAppBar()
+            BottomAppBar()
         }
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {

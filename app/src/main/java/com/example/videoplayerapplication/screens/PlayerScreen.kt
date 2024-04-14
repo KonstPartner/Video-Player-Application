@@ -11,6 +11,7 @@ import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.ui.PlayerView
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 
 @Composable
 fun PlayerScreen(videoUri: String) {
@@ -33,6 +34,11 @@ fun PlayerScreen(videoUri: String) {
     AndroidView(factory = { ctx ->
         PlayerView(ctx).apply {
             player = exoPlayer
+            resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
+            setBackgroundColor(android.graphics.Color.BLACK)
+            systemUiVisibility = android.view.View.SYSTEM_UI_FLAG_FULLSCREEN or
+                    android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+                    android.view.View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
         }
     }, modifier = Modifier.fillMaxSize())
 }

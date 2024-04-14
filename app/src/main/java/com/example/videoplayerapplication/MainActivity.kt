@@ -14,8 +14,8 @@ import com.example.videoplayerapplication.screens.HomeScreen
 import com.example.videoplayerapplication.screens.InternetScreen
 import com.example.videoplayerapplication.screens.PlayerScreen
 import com.example.videoplayerapplication.screens.StorageScreen
-import com.example.videoplayerapplication.screens.StreamingScreen
 import com.example.videoplayerapplication.ui.theme.ThemeViewModel
+import com.example.videoplayerapplication.screens.StreamingScreen
 import com.example.videoplayerapplication.ui.theme.VideoPlayerApplicationTheme
 
 class MainActivity : ComponentActivity() {
