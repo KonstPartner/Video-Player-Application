@@ -11,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -75,7 +76,8 @@ fun TopAppBar(
     navigationIcon: ImageVector,
     onNavigationIconClick: () -> Unit,
     showMenu: Boolean,
-    onChangeColumns: (Int) -> Unit
+    onChangeColumns: (Int) -> Unit = {},
+    backgroundColor: Color = MaterialTheme.colorScheme.primary
 ) {
     var showDropdown by remember { mutableStateOf(false) }
     var inColumnSettings by remember { mutableStateOf(false) }
@@ -84,7 +86,7 @@ fun TopAppBar(
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp)
-            .background(color = MaterialTheme.colorScheme.primary)
+            .background(color = backgroundColor)
             .padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -127,20 +129,6 @@ fun TopAppBar(
 @Composable
 fun TopAppBarPreview() {
     MaterialTheme {
-        TopAppBar("Текст", Icons.Filled.Home, {}, true) {}
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun CustomDropdownMenuPreview() {
-    MaterialTheme {
-        CustomDropdownMenu(
-            expanded = true,
-            onDismissRequest = {},
-            inColumnSettings = false,
-            onChangeColumns = {},
-            onMenuChange = {}
-        )
+        TopAppBar("Текст", Icons.Filled.Home, {}, true)
     }
 }

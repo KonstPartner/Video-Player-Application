@@ -2,6 +2,8 @@ package com.example.videoplayerapplication.screens
 
 import android.net.Uri
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
@@ -29,8 +31,7 @@ fun InternetScreen(navController: NavController) {
                 title = "Потоковое видео",
                 navigationIcon = Icons.Filled.ArrowBack,
                 onNavigationIconClick = { navController.navigateUp() },
-                showMenu = false,
-                onChangeColumns = {}
+                showMenu = false
             )
         },
         bottomBar = {
@@ -52,12 +53,18 @@ fun InternetScreen(navController: NavController) {
                 color = MaterialTheme.colorScheme.onBackground,
                 fontSize = 17.sp
             )
-            OutlinedTextField(
-                value = videoUrl,
-                onValueChange = { videoUrl = it },
-                label = { Text("Введите URL видео") },
-                modifier = Modifier.fillMaxWidth()
-            )
+            Box(
+                modifier = Modifier
+                    .verticalScroll(rememberScrollState())
+                    .heightIn(max = 150.dp)
+            ) {
+                OutlinedTextField(
+                    value = videoUrl,
+                    onValueChange = { videoUrl = it },
+                    label = { Text("Введите URL видео") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
             Spacer(modifier = Modifier.height(20.dp))
             Button(
                 onClick = {
@@ -72,7 +79,6 @@ fun InternetScreen(navController: NavController) {
         }
     }
 }
-
 
 @Preview @Composable
 fun InternetScreenPreview() {

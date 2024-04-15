@@ -37,7 +37,7 @@ import com.example.videoplayerapplication.ui.theme.ThemeViewModel
 fun HomeScreen(navController: NavController, themeViewModel: ThemeViewModel) {
     Scaffold(
         topBar = {
-            TopAppBar(title = "Главная", Icons.Filled.Home, {}, false){}
+            TopAppBar(title = "Главная", Icons.Filled.Home, {}, false)
         },
         bottomBar = {
             BottomAppBar()
