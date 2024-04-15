@@ -15,7 +15,6 @@ import com.example.videoplayerapplication.screens.InternetScreen
 import com.example.videoplayerapplication.screens.PlayerScreen
 import com.example.videoplayerapplication.screens.StorageScreen
 import com.example.videoplayerapplication.ui.theme.ThemeViewModel
-import com.example.videoplayerapplication.screens.StreamingScreen
 import com.example.videoplayerapplication.ui.theme.VideoPlayerApplicationTheme
 
 class MainActivity : ComponentActivity() {
@@ -33,12 +32,8 @@ class MainActivity : ComponentActivity() {
                         composable("storageScreen") { StorageScreen(navController) }
                         composable("internetScreen") { InternetScreen(navController) }
                         composable("playerScreen/{videoUri}") { backStackEntry ->
-                            PlayerScreen(videoUri = backStackEntry.arguments?.getString("videoUri") ?: "")
+                            PlayerScreen(navController, videoUri = backStackEntry.arguments?.getString("videoUri") ?: "")
                         }
-                        composable("streamingScreen/{videoUrl}") { backStackEntry ->
-                            StreamingScreen(videoUrl = Uri.decode(backStackEntry.arguments?.getString("videoUrl") ?: ""))
-                        }
-
                     }
                 }
             }
