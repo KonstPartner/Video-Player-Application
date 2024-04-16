@@ -21,7 +21,9 @@ private val DarkColorScheme = darkColorScheme(
     onPrimary = DarkText,
     background = DarkBackground,
     secondary = DarkPrimary,
-    onBackground = DarkIcon
+    onBackground = DarkIcon,
+    surface = DarkDialog
+
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -29,7 +31,8 @@ private val LightColorScheme = lightColorScheme(
     onPrimary = LightText,
     background = LightBackground,
     secondary = LightBackground,
-    onBackground = LightIcon
+    onBackground = LightIcon,
+    surface = LightDialog
 )
 
 

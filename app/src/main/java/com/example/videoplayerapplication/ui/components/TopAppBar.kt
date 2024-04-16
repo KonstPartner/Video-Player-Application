@@ -3,6 +3,7 @@ package com.example.videoplayerapplication.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Divider
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
@@ -11,6 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
@@ -87,13 +89,16 @@ fun TopAppBar(
             .fillMaxWidth()
             .height(56.dp)
             .background(color = backgroundColor)
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 5.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
             imageVector = navigationIcon,
             contentDescription = "Назад",
-            modifier = Modifier.clickable { onNavigationIconClick() },
+            modifier = Modifier
+                .clip(CircleShape)
+                .clickable { onNavigationIconClick() }
+                .padding(12.dp),
             tint = MaterialTheme.colorScheme.onPrimary
         )
         Spacer(modifier = Modifier.width(16.dp))
@@ -109,7 +114,9 @@ fun TopAppBar(
                     imageVector = Icons.Filled.MoreVert,
                     contentDescription = "Menu",
                     modifier = Modifier
-                        .clickable { showDropdown = true },
+                        .clip(CircleShape)
+                        .clickable { showDropdown = true }
+                        .padding(12.dp),
                     tint = MaterialTheme.colorScheme.onPrimary
                 )
                 CustomDropdownMenu(
