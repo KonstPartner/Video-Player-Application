@@ -40,8 +40,16 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.ui.text.TextStyle
 import com.example.videoplayerapplication.ui.components.BottomAppBar
 import com.example.videoplayerapplication.ui.components.TopAppBar
+import com.example.videoplayerapplication.ui.components.Video
+import com.example.videoplayerapplication.ui.components.getVideos
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.delay
+
+enum class SortOrder(val title: String) {
+    ByName("По имени"),
+    ByDate("По дате"),
+    ByDuration("По длительности")
+}
 
 
 @Composable
@@ -49,16 +57,29 @@ fun StorageScreen(navController: NavController) {
     val context = LocalContext.current
     var searchText by remember { mutableStateOf("") }
     var searchTextDebounced by remember { mutableStateOf("") }
+    var sortOrder by remember { mutableStateOf(SortOrder.ByName) }
+    var ascending by remember { mutableStateOf(true) }
 
     LaunchedEffect(searchText) {
         delay(300)
         searchTextDebounced = searchText
     }
 
-    val filteredVideos by remember(searchTextDebounced) {
-        mutableStateOf(getVideos(context).filter {
-            searchTextDebounced.isEmpty() || it.title.contains(searchTextDebounced, ignoreCase = true)
-        })
+    val filteredSortedVideos by remember(searchTextDebounced, sortOrder, ascending) {
+        mutableStateOf(
+            getVideos(context)
+                .filter { searchTextDebounced.isEmpty() || it.title.contains(searchTextDebounced, ignoreCase = true) }
+                .sortedWith(Comparator { a, b ->
+                    when (sortOrder) {
+                        SortOrder.ByName -> if (!ascending) a.title.compareTo(b.title) else b
+                            .title.compareTo(a.title)
+                        SortOrder.ByDate -> if (!ascending) a.date.compareTo(b.date) else b.date
+                            .compareTo(a.date)
+                        SortOrder.ByDuration -> if (!ascending) a.duration.compareTo(b.duration)
+                        else b.duration.compareTo(a.duration)
+                    }
+                })
+        )
     }
 
     var columns by remember { mutableStateOf(1) }
@@ -70,7 +91,15 @@ fun StorageScreen(navController: NavController) {
                 navigationIcon = Icons.Filled.ArrowBack,
                 onNavigationIconClick = { navController.navigateUp() },
                 showMenu = true,
-                onChangeColumns = { columns = it }
+                onChangeColumns = { columns = it },
+                onSortChange = { selectedSortOrder, isAsc ->
+                    if (sortOrder == selectedSortOrder) {
+                        ascending = !ascending
+                    } else {
+                        sortOrder = selectedSortOrder
+                        ascending = isAsc
+                    }
+                }
             )
         },
         bottomBar = {
@@ -79,10 +108,12 @@ fun StorageScreen(navController: NavController) {
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
             SearchBar(searchText = searchText, onSearchTextChanged = { searchText = it })
-            VideoGrid(videos = filteredVideos, columns = columns, navController = navController)
+            VideoGrid(videos = filteredSortedVideos, columns = columns, navController = navController)
         }
     }
 }
+
+
 
 
 @Composable

@@ -1,5 +1,10 @@
 package com.example.videoplayerapplication.ui.components
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -17,14 +22,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.videoplayerapplication.screens.SortOrder
 
 @Composable
 fun CustomDropdownMenu(
     expanded: Boolean,
     onDismissRequest: () -> Unit,
-    inColumnSettings: Boolean,
+    inColumnSettings: MutableState<Boolean>,
+    inSortingOptions: MutableState<Boolean>,
     onChangeColumns: (Int) -> Unit,
-    onMenuChange: (Boolean) -> Unit
+    onSortChange: (SortOrder, Boolean) -> Unit
 ) {
     val backgroundColor = MaterialTheme.colorScheme.secondary
     val textColor = MaterialTheme.colorScheme.onBackground
@@ -33,23 +40,48 @@ fun CustomDropdownMenu(
     DropdownMenu(
         expanded = expanded,
         onDismissRequest = {
-            onMenuChange(false)
+            if (inSortingOptions.value || inColumnSettings.value) {
+                inSortingOptions.value = false
+                inColumnSettings.value = false
+            }
             onDismissRequest()
         },
-        modifier = Modifier
-            .width(240.dp)
-            .background(backgroundColor)
+        modifier = Modifier.width(240.dp).background(backgroundColor)
     ) {
-        if (!inColumnSettings) {
+        if (!inColumnSettings.value && !inSortingOptions.value) {
             DropdownMenuItem(
                 text = { Text("Вид", color = textColor) },
-                onClick = { onMenuChange(true) },
+                onClick = { inColumnSettings.value = true },
                 modifier = Modifier.heightIn(min = menuItemHeight)
             )
-        } else {
+            Divider(color = textColor.copy(alpha = 0.2f))
+            DropdownMenuItem(
+                text = { Text("Сортировать", color = textColor) },
+                onClick = { inSortingOptions.value = true },
+                modifier = Modifier.heightIn(min = menuItemHeight)
+            )
+        } else if (inSortingOptions.value) {
             DropdownMenuItem(
                 text = { Text("Назад", color = textColor) },
-                onClick = { onMenuChange(false) },
+                onClick = { inSortingOptions.value = false },
+                modifier = Modifier.heightIn(min = menuItemHeight)
+            )
+            Divider(color = textColor.copy(alpha = 0.2f))
+            SortOrder.values().forEach { sortOrder ->
+                DropdownMenuItem(
+                    text = { Text(sortOrder.title, color = textColor) },
+                    onClick = {
+                        onSortChange(sortOrder, true); inSortingOptions.value = false
+                        onDismissRequest()
+                    },
+                    modifier = Modifier.heightIn(min = menuItemHeight)
+                )
+                if (sortOrder.title != "По длительности") Divider(color = textColor.copy(alpha = 0.2f))
+            }
+        } else if (inColumnSettings.value) {
+            DropdownMenuItem(
+                text = { Text("Назад", color = textColor) },
+                onClick = { inColumnSettings.value = false },
                 modifier = Modifier.heightIn(min = menuItemHeight)
             )
             Divider(color = textColor.copy(alpha = 0.2f))
@@ -58,7 +90,7 @@ fun CustomDropdownMenu(
                     text = { Text("$count видео в строке", color = textColor) },
                     onClick = {
                         onChangeColumns(count)
-                        onMenuChange(false)
+                        inColumnSettings.value = false
                         onDismissRequest()
                     },
                     modifier = Modifier.heightIn(min = menuItemHeight)
@@ -70,8 +102,6 @@ fun CustomDropdownMenu(
 }
 
 
-
-
 @Composable
 fun TopAppBar(
     title: String,
@@ -79,17 +109,19 @@ fun TopAppBar(
     onNavigationIconClick: () -> Unit,
     showMenu: Boolean,
     onChangeColumns: (Int) -> Unit = {},
+    onSortChange: (SortOrder, Boolean) -> Unit = { _, _ -> },
     backgroundColor: Color = MaterialTheme.colorScheme.primary
 ) {
     var showDropdown by remember { mutableStateOf(false) }
-    var inColumnSettings by remember { mutableStateOf(false) }
+    val inColumnSettings = remember { mutableStateOf(false) }
+    val inSortingOptions = remember { mutableStateOf(false) }
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp)
             .background(color = backgroundColor)
-            .padding(horizontal = 5.dp),
+            .padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
@@ -108,28 +140,34 @@ fun TopAppBar(
             style = MaterialTheme.typography.titleLarge,
         )
         Spacer(Modifier.weight(1f))
-        Box {
-            if (showMenu) {
-                Icon(
-                    imageVector = Icons.Filled.MoreVert,
-                    contentDescription = "Menu",
-                    modifier = Modifier
-                        .clip(CircleShape)
-                        .clickable { showDropdown = true }
-                        .padding(12.dp),
-                    tint = MaterialTheme.colorScheme.onPrimary
-                )
+        if (showMenu) {
+            Icon(
+                imageVector = Icons.Filled.MoreVert,
+                contentDescription = "Menu",
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .clickable { showDropdown = !showDropdown }
+                    .padding(12.dp),
+                tint = MaterialTheme.colorScheme.onPrimary
+            )
+            AnimatedVisibility(
+                visible = showDropdown,
+                enter = fadeIn() + expandVertically(),
+                exit = fadeOut() + shrinkVertically()
+            ) {
                 CustomDropdownMenu(
                     expanded = showDropdown,
                     onDismissRequest = { showDropdown = false },
                     inColumnSettings = inColumnSettings,
+                    inSortingOptions = inSortingOptions,
                     onChangeColumns = onChangeColumns,
-                    onMenuChange = { inColumnSettings = it }
+                    onSortChange = onSortChange
                 )
             }
         }
     }
 }
+
 
 
 @Preview(showBackground = true)

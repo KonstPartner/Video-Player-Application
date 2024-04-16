@@ -94,51 +94,52 @@ fun PlayerScreen(navController: NavController, videoUri: String) {
         navController.navigateUp()
         showSystemUI(context)
     }
-Box() {
-    AndroidView(factory = { ctx ->
-        PlayerView(ctx).apply {
-            player = exoPlayer
-            resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
-            setBackgroundColor(android.graphics.Color.BLACK)
-            systemUiVisibility = android.view.View.SYSTEM_UI_FLAG_FULLSCREEN or
-                    android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
-                    android.view.View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-            setOnTouchListener { _, _ ->
-                onTouch()
-                hideSystemUI(ctx)
-                false
+
+    Box {
+        AndroidView(factory = { ctx ->
+            PlayerView(ctx).apply {
+                player = exoPlayer
+                resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
+                setBackgroundColor(android.graphics.Color.BLACK)
+                systemUiVisibility = android.view.View.SYSTEM_UI_FLAG_FULLSCREEN or
+                        android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+                        android.view.View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                setOnTouchListener { _, _ ->
+                    onTouch()
+                    hideSystemUI(ctx)
+                    false
+                }
             }
+        }, modifier = Modifier.fillMaxSize())
+
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.align(Alignment.Center),
+                color = MaterialTheme.colorScheme.primary
+            )
         }
-    }, modifier = Modifier.fillMaxSize())
 
-    if (isLoading) {
-        CircularProgressIndicator(
-            modifier = Modifier.align(Alignment.Center),
-            color = MaterialTheme.colorScheme.primary
-        )
-    }
-
-    if (showErrorDialog) {
-        ErrorDialog(onDismiss = {
-            showErrorDialog = false
-            navController.navigateUp()
-            showSystemUI(context)
-        })
-    }
-
-    if (isAppBarVisible) {
-        TopAppBar(
-            title = "",
-            navigationIcon = Icons.Filled.ArrowBack,
-            onNavigationIconClick = {
+        if (showErrorDialog) {
+            ErrorDialog(onDismiss = {
+                showErrorDialog = false
                 navController.navigateUp()
                 showSystemUI(context)
-            },
-            showMenu = false,
-            backgroundColor = Color.Black
-        )
+            })
+        }
+
+        if (isAppBarVisible) {
+            TopAppBar(
+                title = "",
+                navigationIcon = Icons.Filled.ArrowBack,
+                onNavigationIconClick = {
+                    navController.navigateUp()
+                    showSystemUI(context)
+                },
+                showMenu = false,
+                backgroundColor = Color.Black
+            )
+        }
     }
-}
 }
 
 fun hideSystemUI(context: Context) {
