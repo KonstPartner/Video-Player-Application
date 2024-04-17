@@ -124,9 +124,9 @@ fun StorageScreen(navController: NavController) {
 @Composable
 fun VideoItem(video: Video, columns: Int, navController: NavController, context: Context) {
     val textStyle = getTextStyleForColumns(columns)
-    var showRenameDialog by remember { mutableStateOf(false) } // Состояние для диалога переименования
-    var showMenu by remember { mutableStateOf(false) } // Состояние для контекстного меню
-    var newName by remember { mutableStateOf(video.title) } // Состояние для нового имени файла
+    var showRenameDialog by remember { mutableStateOf(false) }
+    var showMenu by remember { mutableStateOf(false) }
+    var newName by remember { mutableStateOf(video.title) }
 
     Card(
         modifier = Modifier
@@ -187,7 +187,7 @@ fun VideoItem(video: Video, columns: Int, navController: NavController, context:
             DropdownMenuItem(
                 onClick = {
                     showMenu = false
-                    showRenameDialog = true // Показываем диалог переименования
+                    showRenameDialog = true
                 },
                 text = { Text("Переименовать") }
             )
@@ -210,7 +210,7 @@ fun VideoItem(video: Video, columns: Int, navController: NavController, context:
                     Button(
                         onClick = {
                             showRenameDialog = false
-                            renameVideo(context, video.uri, newName) // Вызов функции переименования
+                            renameVideo(context, video.uri, newName)
                         }
                     ) {
                         Text("ОК")
@@ -234,14 +234,14 @@ fun VideoItem(video: Video, columns: Int, navController: NavController, context:
 
 @Composable
 fun VideoGrid(videos: List<Video>, columns: Int, navController: NavController) {
-    val context = LocalContext.current // Получаем текущий контекст
+    val context = LocalContext.current
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(columns),
         contentPadding = PaddingValues(8.dp),
     ) {
         items(videos) { video ->
-            VideoItem(video = video, columns, navController, context) // Передаем контекст в VideoItem
+            VideoItem(video = video, columns, navController, context)
         }
     }
 }

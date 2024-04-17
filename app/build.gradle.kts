@@ -70,6 +70,8 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.4.0-beta01")
     implementation("io.coil-kt:coil-compose:1.3.2")
 
+    implementation("androidx.appcompat:appcompat:1.4.1")
+
 
     // Тестирование
     testImplementation("junit:junit:4.13.2")
