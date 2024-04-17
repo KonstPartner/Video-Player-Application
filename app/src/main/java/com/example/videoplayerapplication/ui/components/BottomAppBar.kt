@@ -20,7 +20,7 @@ private fun BottomBar() {
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp)
-            .background(color = MaterialTheme.colorScheme.primary)
+            .background(color = MaterialTheme.colorScheme.onSecondary)
     ) {}
 }
 

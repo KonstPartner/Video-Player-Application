@@ -34,7 +34,7 @@ fun CustomDropdownMenu(
     onSortChange: (SortOrder, Boolean) -> Unit
 ) {
     val backgroundColor = MaterialTheme.colorScheme.secondary
-    val textColor = MaterialTheme.colorScheme.onBackground
+    val textColor = MaterialTheme.colorScheme.primary
     val menuItemHeight = 48.dp
 
     DropdownMenu(
@@ -110,7 +110,8 @@ fun TopAppBar(
     showMenu: Boolean,
     onChangeColumns: (Int) -> Unit = {},
     onSortChange: (SortOrder, Boolean) -> Unit = { _, _ -> },
-    backgroundColor: Color = MaterialTheme.colorScheme.primary
+    backgroundColor: Color = MaterialTheme.colorScheme.onSecondary,
+    iconColor: Color = MaterialTheme.colorScheme.primary
 ) {
     var showDropdown by remember { mutableStateOf(false) }
     val inColumnSettings = remember { mutableStateOf(false) }
@@ -131,12 +132,12 @@ fun TopAppBar(
                 .clip(CircleShape)
                 .clickable { onNavigationIconClick() }
                 .padding(12.dp),
-            tint = MaterialTheme.colorScheme.onPrimary
+            tint = iconColor
         )
         Spacer(modifier = Modifier.width(16.dp))
         Text(
             text = title,
-            color = MaterialTheme.colorScheme.onPrimary,
+            color = MaterialTheme.colorScheme.primary,
             style = MaterialTheme.typography.titleLarge,
         )
         Spacer(Modifier.weight(1f))
@@ -148,7 +149,7 @@ fun TopAppBar(
                     .clip(CircleShape)
                     .clickable { showDropdown = !showDropdown }
                     .padding(12.dp),
-                tint = MaterialTheme.colorScheme.onPrimary
+                tint = MaterialTheme.colorScheme.primary
             )
             AnimatedVisibility(
                 visible = showDropdown,

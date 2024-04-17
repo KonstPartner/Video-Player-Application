@@ -62,7 +62,7 @@ fun PlayerScreen(navController: NavController, videoUri: String) {
                 isLoading = state == Player.STATE_BUFFERING || state == Player.STATE_IDLE
             }
             override fun onPlayerError(error: PlaybackException) {
-                showErrorDialog = true // Показать диалоговое окно при ошибке
+                showErrorDialog = true
             }
         }
         exoPlayer.addListener(listener)
@@ -115,7 +115,7 @@ fun PlayerScreen(navController: NavController, videoUri: String) {
         if (isLoading) {
             CircularProgressIndicator(
                 modifier = Modifier.align(Alignment.Center),
-                color = MaterialTheme.colorScheme.primary
+                color = Color.White
             )
         }
 
@@ -136,7 +136,8 @@ fun PlayerScreen(navController: NavController, videoUri: String) {
                     showSystemUI(context)
                 },
                 showMenu = false,
-                backgroundColor = Color.Black
+                backgroundColor = Color.Black,
+                iconColor = Color.White
             )
         }
     }
@@ -162,25 +163,25 @@ fun showSystemUI(context: Context) {
 fun ErrorDialog(onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = {},
-        backgroundColor = MaterialTheme.colorScheme.surface,
+        backgroundColor = MaterialTheme.colorScheme.secondary,
         confirmButton = {
             TextButton(onClick = onDismiss) {
                 Text(
                     text = "OK",
-                    color = MaterialTheme.colorScheme.onBackground
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
         },
         title = {
             Text(
                 text = "Ошибка воспроизведения",
-                color = MaterialTheme.colorScheme.onBackground
+                color = MaterialTheme.colorScheme.primary
                 )
         },
         text = {
             Text(
                 text = "Не удалось загрузить видео. Пожалуйста, проверьте корректность переданной ссылки, ваше соединение и попробуйте снова.",
-                color = MaterialTheme.colorScheme.onBackground
+                color = MaterialTheme.colorScheme.primary
             )
         }
     )

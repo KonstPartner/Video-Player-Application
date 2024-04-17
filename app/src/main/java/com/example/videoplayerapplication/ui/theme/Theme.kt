@@ -15,26 +15,24 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
-// Theme.kt
-private val DarkColorScheme = darkColorScheme(
-    primary = DarkPrimary,
-    onPrimary = DarkText,
-    background = DarkBackground,
-    secondary = DarkPrimary,
-    onBackground = DarkIcon,
-    surface = DarkDialog
 
-)
+
+// Theme.kt
 
 private val LightColorScheme = lightColorScheme(
-    primary = LightPrimary,
-    onPrimary = LightText,
-    background = LightBackground,
-    secondary = LightBackground,
-    onBackground = LightIcon,
-    surface = LightDialog
+    primary = Black,            // Текст
+    secondary = White,          // Кнопки
+    background = White,         // Фон
+    onSecondary = LightGray,    // Верхняя/Нижняя панель
 )
 
+
+private val DarkColorScheme = darkColorScheme(
+    primary = White,             // Текст
+    secondary = DarkGray,        // Кнопки
+    background = LightBlack,     //Фон
+    onSecondary = DarkGray,    // Верхняя/Нижняя панель
+)
 
 @Composable
 fun VideoPlayerApplicationTheme(

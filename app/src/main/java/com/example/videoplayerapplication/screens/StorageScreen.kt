@@ -2,6 +2,7 @@ package com.example.videoplayerapplication.screens
 
 import android.content.Context
 import android.net.Uri
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -134,10 +135,11 @@ fun VideoItem(video: Video, columns: Int, navController: NavController, context:
             .fillMaxWidth()
             .combinedClickable(
                 onClick = { navController.navigate("playerScreen/${Uri.encode(video.uri.toString())}") },
-                onLongClick = { showMenu = true }
+                onLongClick = { showMenu = true },
             ),
+        border = BorderStroke(1.dp, Color.Black),
         shape = RoundedCornerShape(8.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondary)
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -156,11 +158,11 @@ fun VideoItem(video: Video, columns: Int, navController: NavController, context:
                     Text(
                         text = formatDuration(video.duration),
                         style = MaterialTheme.typography.bodySmall,
-                        color = Color.White,
                         modifier = Modifier
                             .align(Alignment.BottomEnd)
                             .background(Color.Black.copy(alpha = 0.5f), RoundedCornerShape(4.dp))
-                            .padding(horizontal = 4.dp, vertical = 2.dp)
+                            .padding(horizontal = 4.dp, vertical = 2.dp),
+                        color = Color.White
                     )
                     Icon(
                         Icons.Filled.PlayArrow,
@@ -176,7 +178,8 @@ fun VideoItem(video: Video, columns: Int, navController: NavController, context:
             Text(
                 text = video.title,
                 style = textStyle,
-                modifier = Modifier.padding(horizontal = 4.dp)
+                modifier = Modifier.padding(horizontal = 4.dp),
+                color = MaterialTheme.colorScheme.primary
             )
         }
 
@@ -189,7 +192,7 @@ fun VideoItem(video: Video, columns: Int, navController: NavController, context:
                     showMenu = false
                     showRenameDialog = true
                 },
-                text = { Text("Переименовать") }
+                text = { Text("Переименовать", color = MaterialTheme.colorScheme.primary) }
             )
         }
 
@@ -198,7 +201,7 @@ fun VideoItem(video: Video, columns: Int, navController: NavController, context:
                 onDismissRequest = {
                     showRenameDialog = false
                 },
-                title = { Text("Переименовать видео") },
+                title = { Text("Переименовать видео", color = MaterialTheme.colorScheme.primary) },
                 text = {
                     TextField(
                         value = newName,
@@ -211,18 +214,20 @@ fun VideoItem(video: Video, columns: Int, navController: NavController, context:
                         onClick = {
                             showRenameDialog = false
                             renameVideo(context, video.uri, newName)
-                        }
+                        },
+                        colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondary)
                     ) {
-                        Text("ОК")
+                        Text("ОК", color = MaterialTheme.colorScheme.primary)
                     }
                 },
                 dismissButton = {
                     Button(
                         onClick = {
                             showRenameDialog = false
-                        }
+                        },
+                        colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondary)
                     ) {
-                        Text("Отмена")
+                        Text("Отмена", color = MaterialTheme.colorScheme.primary)
                     }
                 }
             )
@@ -277,8 +282,8 @@ fun SearchBar(searchText: String, onSearchTextChanged: (String) -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp),
-        placeholder = { Text(text="Поиск...") },
-        leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Поиск", tint = MaterialTheme.colorScheme.onSurface) },
+        placeholder = { Text(text="Поиск...", color = MaterialTheme.colorScheme.primary) },
+        leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Поиск", tint = MaterialTheme.colorScheme.primary) },
         colors = TextFieldDefaults.outlinedTextFieldColors(
             containerColor = Color.Transparent,
             focusedBorderColor = MaterialTheme.colorScheme.primary,

@@ -2,8 +2,8 @@ package com.example.videoplayerapplication
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.animation.AnimationUtils
-import android.widget.ImageView
+import android.os.Handler
+import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
 
 class SplashActivity : AppCompatActivity() {
@@ -12,14 +12,12 @@ class SplashActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.splash_screen)
 
-        val imageView = findViewById<ImageView>(R.id.splash_image)
-        val fadeOut = AnimationUtils.loadAnimation(this, R.anim.fade_out)
-
-
-        imageView.postOnAnimationDelayed({
+        Handler(Looper.getMainLooper()).postDelayed({
             startActivity(Intent(this, MainActivity::class.java))
+            overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
             finish()
-        }, fadeOut.duration)
+        }, 1000)
+
     }
 }
 
