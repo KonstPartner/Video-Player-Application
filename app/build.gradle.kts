@@ -72,6 +72,8 @@ dependencies {
 
     implementation("androidx.appcompat:appcompat:1.4.1")
 
+    implementation("org.nanohttpd:nanohttpd:2.3.1")
+
 
     // Тестирование
     testImplementation("junit:junit:4.13.2")

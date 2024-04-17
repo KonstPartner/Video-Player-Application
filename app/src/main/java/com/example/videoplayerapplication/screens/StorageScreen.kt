@@ -1,12 +1,15 @@
 package com.example.videoplayerapplication.screens
 
 import android.content.Context
+import android.database.Cursor
 import android.net.Uri
+import android.provider.MediaStore
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -42,6 +45,8 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.sp
+import com.example.videoplayerapplication.server.VideoStreamServer
 import com.example.videoplayerapplication.ui.components.BottomAppBar
 import com.example.videoplayerapplication.ui.components.TopAppBar
 import com.example.videoplayerapplication.ui.components.Video
@@ -49,6 +54,7 @@ import com.example.videoplayerapplication.ui.components.getVideos
 import com.example.videoplayerapplication.ui.components.renameVideo
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.delay
+import java.net.NetworkInterface
 
 enum class SortOrder(val title: String) {
     ByName("По имени"),
@@ -56,6 +62,43 @@ enum class SortOrder(val title: String) {
     ByDuration("По длительности")
 }
 
+fun onVideoSelected(context: Context, videoUri: Uri) {
+    val videoPath = getPathFromUri(context, videoUri)
+    if (videoPath != null) {
+        val server = VideoStreamServer(8080)
+        server.videoFilePath = videoPath
+        server.start()
+        val ipAddress = getLocalIpAddress()
+        val url = "http://$ipAddress:8080"
+        Toast.makeText(context, "URL: $url", Toast.LENGTH_LONG).show()
+    } else {
+        Toast.makeText(context, "Не удалось получить путь к файлу.", Toast.LENGTH_SHORT).show()
+    }
+}
+
+fun getPathFromUri(context: Context, uri: Uri): String? {
+    val projection = arrayOf(MediaStore.Video.Media.DATA)
+    val cursor: Cursor? = context.contentResolver.query(uri, projection, null, null, null)
+    return if (cursor != null) {
+        val columnIndex: Int = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DATA)
+        cursor.moveToFirst()
+        val path = cursor.getString(columnIndex)
+        cursor.close()
+        path
+    } else
+        null
+}
+
+fun getLocalIpAddress(): String? {
+    val ipAddress = NetworkInterface.getNetworkInterfaces().toList()
+        .filter { it.inetAddresses.hasMoreElements() && !it.isLoopback }
+        .flatMap { it.inetAddresses.toList() }
+        .find { !it.isLoopbackAddress && it.isSiteLocalAddress }
+        ?.let { return it.hostAddress.toString() }
+    Log.d("NetworkInfo", "IP Address: $ipAddress")
+
+    return ipAddress
+}
 
 @Composable
 fun StorageScreen(navController: NavController) {
@@ -118,9 +161,6 @@ fun StorageScreen(navController: NavController) {
     }
 }
 
-
-
-
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun VideoItem(video: Video, columns: Int, navController: NavController, context: Context) {
@@ -175,12 +215,25 @@ fun VideoItem(video: Video, columns: Int, navController: NavController, context:
                 }
             }
             Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = video.title,
-                style = textStyle,
-                modifier = Modifier.padding(horizontal = 4.dp),
-                color = MaterialTheme.colorScheme.primary
-            )
+            Row {
+                Text(
+                    text = video.title,
+                    style = textStyle,
+                    modifier = Modifier.padding(horizontal = 4.dp),
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Button(
+                    onClick = {
+                        onVideoSelected(context, videoUri = video.uri)
+                        navController.navigate("playerScreen/${Uri.encode(video.uri.toString())}")
+                    },
+                    colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondary),
+                    border = BorderStroke(1.dp, Color.Black),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text("Передавать", color = MaterialTheme.colorScheme.primary, fontSize = 10.sp)
+                }
+            }
         }
 
         DropdownMenu(
@@ -235,8 +288,6 @@ fun VideoItem(video: Video, columns: Int, navController: NavController, context:
     }
 }
 
-
-
 @Composable
 fun VideoGrid(videos: List<Video>, columns: Int, navController: NavController) {
     val context = LocalContext.current
@@ -251,8 +302,6 @@ fun VideoGrid(videos: List<Video>, columns: Int, navController: NavController) {
     }
 }
 
-
-
 @Composable
 fun getTextStyleForColumns(columns: Int): TextStyle {
     return when (columns) {
@@ -262,13 +311,11 @@ fun getTextStyleForColumns(columns: Int): TextStyle {
     }
 }
 
-
 fun formatDuration(durationMs: Long): String {
     val minutes = TimeUnit.MILLISECONDS.toMinutes(durationMs)
     val seconds = TimeUnit.MILLISECONDS.toSeconds(durationMs) % 60
     return String.format("%02d:%02d", minutes, seconds)
 }
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -295,7 +342,6 @@ fun SearchBar(searchText: String, onSearchTextChanged: (String) -> Unit) {
         })
     )
 }
-
 
 @Composable @Preview
 fun StorageScreenPreview(){
