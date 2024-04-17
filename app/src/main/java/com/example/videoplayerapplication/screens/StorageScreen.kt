@@ -1,9 +1,12 @@
 package com.example.videoplayerapplication.screens
 
+import android.content.Context
 import android.net.Uri
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -42,6 +45,7 @@ import com.example.videoplayerapplication.ui.components.BottomAppBar
 import com.example.videoplayerapplication.ui.components.TopAppBar
 import com.example.videoplayerapplication.ui.components.Video
 import com.example.videoplayerapplication.ui.components.getVideos
+import com.example.videoplayerapplication.ui.components.renameVideo
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.delay
 
@@ -71,7 +75,7 @@ fun StorageScreen(navController: NavController) {
                 .filter { searchTextDebounced.isEmpty() || it.title.contains(searchTextDebounced, ignoreCase = true) }
                 .sortedWith(Comparator { a, b ->
                     when (sortOrder) {
-                        SortOrder.ByName -> if (!ascending) a.title.compareTo(b.title) else b
+                        SortOrder.ByName -> if (ascending) a.title.compareTo(b.title) else b
                             .title.compareTo(a.title)
                         SortOrder.ByDate -> if (!ascending) a.date.compareTo(b.date) else b.date
                             .compareTo(a.date)
@@ -116,15 +120,22 @@ fun StorageScreen(navController: NavController) {
 
 
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun VideoItem(video: Video, columns: Int, navController: NavController) {
+fun VideoItem(video: Video, columns: Int, navController: NavController, context: Context) {
     val textStyle = getTextStyleForColumns(columns)
+    var showRenameDialog by remember { mutableStateOf(false) } // Состояние для диалога переименования
+    var showMenu by remember { mutableStateOf(false) } // Состояние для контекстного меню
+    var newName by remember { mutableStateOf(video.title) } // Состояние для нового имени файла
 
     Card(
         modifier = Modifier
             .padding(8.dp)
             .fillMaxWidth()
-            .clickable { navController.navigate("playerScreen/${Uri.encode(video.uri.toString())}") },
+            .combinedClickable(
+                onClick = { navController.navigate("playerScreen/${Uri.encode(video.uri.toString())}") },
+                onLongClick = { showMenu = true }
+            ),
         shape = RoundedCornerShape(8.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary)
     ) {
@@ -168,20 +179,73 @@ fun VideoItem(video: Video, columns: Int, navController: NavController) {
                 modifier = Modifier.padding(horizontal = 4.dp)
             )
         }
+
+        DropdownMenu(
+            expanded = showMenu,
+            onDismissRequest = { showMenu = false }
+        ) {
+            DropdownMenuItem(
+                onClick = {
+                    showMenu = false
+                    showRenameDialog = true // Показываем диалог переименования
+                },
+                text = { Text("Переименовать") }
+            )
+        }
+
+        if (showRenameDialog) {
+            AlertDialog(
+                onDismissRequest = {
+                    showRenameDialog = false
+                },
+                title = { Text("Переименовать видео") },
+                text = {
+                    TextField(
+                        value = newName,
+                        onValueChange = { newName = it },
+                        singleLine = true
+                    )
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            showRenameDialog = false
+                            renameVideo(context, video.uri, newName) // Вызов функции переименования
+                        }
+                    ) {
+                        Text("ОК")
+                    }
+                },
+                dismissButton = {
+                    Button(
+                        onClick = {
+                            showRenameDialog = false
+                        }
+                    ) {
+                        Text("Отмена")
+                    }
+                }
+            )
+        }
     }
 }
 
+
+
 @Composable
 fun VideoGrid(videos: List<Video>, columns: Int, navController: NavController) {
+    val context = LocalContext.current // Получаем текущий контекст
+
     LazyVerticalGrid(
         columns = GridCells.Fixed(columns),
         contentPadding = PaddingValues(8.dp),
     ) {
         items(videos) { video ->
-            VideoItem(video = video, columns, navController)
+            VideoItem(video = video, columns, navController, context) // Передаем контекст в VideoItem
         }
     }
 }
+
 
 
 @Composable
