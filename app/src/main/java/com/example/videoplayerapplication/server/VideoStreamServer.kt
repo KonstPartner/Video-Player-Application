@@ -15,4 +15,9 @@ class VideoStreamServer(port: Int) : NanoHTTPD(port) {
             newFixedLengthResponse(Response.Status.FORBIDDEN, MIME_PLAINTEXT, "Error opening file")
         }
     }
+
+    fun stopServer() {
+        stop()
+    }
 }
+

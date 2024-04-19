@@ -6,10 +6,12 @@ import android.net.Uri
 import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -62,19 +64,21 @@ enum class SortOrder(val title: String) {
     ByDuration("По длительности")
 }
 
-fun onVideoSelected(context: Context, videoUri: Uri) {
+fun onVideoSelected(context: Context, videoUri: Uri, server: MutableState<VideoStreamServer?>) {
     val videoPath = getPathFromUri(context, videoUri)
     if (videoPath != null) {
-        val server = VideoStreamServer(8080)
-        server.videoFilePath = videoPath
-        server.start()
-        val ipAddress = getLocalIpAddress()
-        val url = "http://$ipAddress:8080"
-        Toast.makeText(context, "URL: $url", Toast.LENGTH_LONG).show()
+        server.value?.stopServer()
+        server.value = VideoStreamServer(8080)
+        server.value?.videoFilePath = videoPath
+        server.value?.start()
+        Toast.makeText(context, "Передача запущена", Toast.LENGTH_LONG).show()
     } else {
-        Toast.makeText(context, "Не удалось получить путь к файлу.", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, "Unable to get file path.", Toast.LENGTH_SHORT).show()
     }
 }
+
+
+
 
 fun getPathFromUri(context: Context, uri: Uri): String? {
     val projection = arrayOf(MediaStore.Video.Media.DATA)
@@ -107,10 +111,22 @@ fun StorageScreen(navController: NavController) {
     var searchTextDebounced by remember { mutableStateOf("") }
     var sortOrder by remember { mutableStateOf(SortOrder.ByName) }
     var ascending by remember { mutableStateOf(true) }
+    val server = remember { mutableStateOf<VideoStreamServer?>(null) }
+    val showStreamingWarningDialog = remember { mutableStateOf(false) }
+
+
 
     LaunchedEffect(searchText) {
         delay(300)
         searchTextDebounced = searchText
+    }
+
+    BackHandler {
+        if (server.value != null) {
+            showStreamingWarningDialog.value = true
+        } else {
+            navController.navigateUp()
+        }
     }
 
     val filteredSortedVideos by remember(searchTextDebounced, sortOrder, ascending) {
@@ -137,7 +153,13 @@ fun StorageScreen(navController: NavController) {
             TopAppBar(
                 title = "Выбор видео",
                 navigationIcon = Icons.Filled.ArrowBack,
-                onNavigationIconClick = { navController.navigateUp() },
+                onNavigationIconClick = {
+                    if (server.value != null) {
+                        showStreamingWarningDialog.value = true
+                    } else {
+                        navController.navigateUp()
+                    }
+                },
                 showMenu = true,
                 onChangeColumns = { columns = it },
                 onSortChange = { selectedSortOrder, isAsc ->
@@ -156,25 +178,83 @@ fun StorageScreen(navController: NavController) {
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
             SearchBar(searchText = searchText, onSearchTextChanged = { searchText = it })
-            VideoGrid(videos = filteredSortedVideos, columns = columns, navController = navController)
+            if (server.value != null) {
+                val ipAddress = getLocalIpAddress()
+                val url = "http://$ipAddress:8080"
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 50.dp, end = 50.dp)
+                        .border(1.dp, Color.Black, RoundedCornerShape(8.dp))
+                        .padding(vertical = 4.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "$url",
+                        color = MaterialTheme.colorScheme.primary,
+                        fontSize = 10.sp
+                    )
+                    Button(
+                        onClick = {
+                            server.value?.stopServer()
+                            server.value = null
+                            Toast.makeText(context, "Передача остановлена", Toast.LENGTH_SHORT)
+                                .show()
+                        },
+                        modifier = Modifier.padding(start = 2.dp, end = 2.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            text = "Остановить передачу",
+                            color = Color.White
+                        )
+                    }
+                }
+
+            }
+            VideoGrid(videos = filteredSortedVideos, columns = columns, navController =
+            navController, server = server, showStreamingWarningDialog = showStreamingWarningDialog)
+            if (showStreamingWarningDialog.value) {
+                AlertDialog(
+                    onDismissRequest = { showStreamingWarningDialog.value = false },
+                    title = { Text("Внимание", color = MaterialTheme.colorScheme.primary) },
+                    text = { Text("Для продолжения остановите передачу видео.", color = MaterialTheme.colorScheme.primary) },
+                    confirmButton = {
+                        Button(
+                            onClick = { showStreamingWarningDialog.value = false },
+                            colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme
+                                .primary)
+                        ) {
+                            Text("ОК", color = MaterialTheme.colorScheme.secondary)
+                        }
+                    }
+                )
+            }
         }
     }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun VideoItem(video: Video, columns: Int, navController: NavController, context: Context) {
+fun VideoItem(video: Video, columns: Int, navController: NavController, context: Context, server: MutableState<VideoStreamServer?>, showStreamingWarningDialog: MutableState<Boolean>) {
     val textStyle = getTextStyleForColumns(columns)
-    var showRenameDialog by remember { mutableStateOf(false) }
     var showMenu by remember { mutableStateOf(false) }
-    var newName by remember { mutableStateOf(video.title) }
+
 
     Card(
         modifier = Modifier
             .padding(8.dp)
             .fillMaxWidth()
             .combinedClickable(
-                onClick = { navController.navigate("playerScreen/${Uri.encode(video.uri.toString())}") },
+                onClick = {
+                    if (server.value != null) {
+                        showStreamingWarningDialog.value = true
+                    } else {
+                        navController.navigate("playerScreen/${Uri.encode(video.uri.toString())}")
+                    }
+                },
                 onLongClick = { showMenu = true },
             ),
         border = BorderStroke(1.dp, Color.Black),
@@ -215,25 +295,12 @@ fun VideoItem(video: Video, columns: Int, navController: NavController, context:
                 }
             }
             Spacer(modifier = Modifier.height(8.dp))
-            Row {
-                Text(
-                    text = video.title,
-                    style = textStyle,
-                    modifier = Modifier.padding(horizontal = 4.dp),
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Button(
-                    onClick = {
-                        onVideoSelected(context, videoUri = video.uri)
-                        navController.navigate("playerScreen/${Uri.encode(video.uri.toString())}")
-                    },
-                    colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondary),
-                    border = BorderStroke(1.dp, Color.Black),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text("Передавать", color = MaterialTheme.colorScheme.primary, fontSize = 10.sp)
-                }
-            }
+            Text(
+                text = video.title,
+                style = textStyle,
+                modifier = Modifier.padding(horizontal = 4.dp),
+                color = MaterialTheme.colorScheme.primary
+            )
         }
 
         DropdownMenu(
@@ -243,53 +310,21 @@ fun VideoItem(video: Video, columns: Int, navController: NavController, context:
             DropdownMenuItem(
                 onClick = {
                     showMenu = false
-                    showRenameDialog = true
-                },
-                text = { Text("Переименовать", color = MaterialTheme.colorScheme.primary) }
-            )
-        }
-
-        if (showRenameDialog) {
-            AlertDialog(
-                onDismissRequest = {
-                    showRenameDialog = false
-                },
-                title = { Text("Переименовать видео", color = MaterialTheme.colorScheme.primary) },
-                text = {
-                    TextField(
-                        value = newName,
-                        onValueChange = { newName = it },
-                        singleLine = true
-                    )
-                },
-                confirmButton = {
-                    Button(
-                        onClick = {
-                            showRenameDialog = false
-                            renameVideo(context, video.uri, newName)
-                        },
-                        colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondary)
-                    ) {
-                        Text("ОК", color = MaterialTheme.colorScheme.primary)
+                    if (server.value != null) {
+                        showStreamingWarningDialog.value = true
+                    } else {
+                        onVideoSelected(context, video.uri, server)
                     }
                 },
-                dismissButton = {
-                    Button(
-                        onClick = {
-                            showRenameDialog = false
-                        },
-                        colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondary)
-                    ) {
-                        Text("Отмена", color = MaterialTheme.colorScheme.primary)
-                    }
-                }
+                text = { Text("Передавать", color = MaterialTheme.colorScheme.primary) }
             )
         }
     }
 }
 
 @Composable
-fun VideoGrid(videos: List<Video>, columns: Int, navController: NavController) {
+fun VideoGrid(videos: List<Video>, columns: Int, navController: NavController, server:
+MutableState<VideoStreamServer?>, showStreamingWarningDialog: MutableState<Boolean>) {
     val context = LocalContext.current
 
     LazyVerticalGrid(
@@ -297,7 +332,7 @@ fun VideoGrid(videos: List<Video>, columns: Int, navController: NavController) {
         contentPadding = PaddingValues(8.dp),
     ) {
         items(videos) { video ->
-            VideoItem(video = video, columns, navController, context)
+            VideoItem(video = video, columns, navController, context, server, showStreamingWarningDialog)
         }
     }
 }
