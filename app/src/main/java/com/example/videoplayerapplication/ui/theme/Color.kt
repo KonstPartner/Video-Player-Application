@@ -1,4 +1,3 @@
-// Color.kt
 package com.example.videoplayerapplication.ui.theme
 
 import androidx.compose.ui.graphics.Color

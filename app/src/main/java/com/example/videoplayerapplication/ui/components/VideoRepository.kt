@@ -62,19 +62,5 @@ fun getVideos(context: Context): List<Video> {
     return videos
 }
 
-fun renameVideo(context: Context, uri: Uri, newName: String): Boolean {
-    val values = ContentValues().apply {
-        put(MediaStore.Video.Media.TITLE, newName)
-        put(MediaStore.Video.Media.DISPLAY_NAME, newName)
-    }
-
-    return try {
-        val rowsUpdated = context.contentResolver.update(uri, values, null, null)
-        rowsUpdated > 0
-    } catch (e: Exception) {
-        Log.e("renameVideo", "Failed to rename video: ${e.message}")
-        false
-    }
-}
 
 

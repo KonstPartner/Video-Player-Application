@@ -35,6 +35,7 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import com.google.android.exoplayer2.PlaybackException
 import com.google.android.exoplayer2.Player
@@ -47,19 +48,29 @@ fun PlayerScreen(navController: NavController, videoUri: String) {
     var isLoading by remember { mutableStateOf(true) }
     var showErrorDialog by remember { mutableStateOf(false) }
 
+
     val exoPlayer = remember {
-        ExoPlayer.Builder(context).build().apply {
+        ExoPlayer.Builder(context).build().also { player ->
             val mediaItem = MediaItem.fromUri(Uri.parse(videoUri))
-            setMediaItem(mediaItem)
-            prepare()
-            playWhenReady = true
+            player.setMediaItem(mediaItem)
+            player.prepare()
+            player.playWhenReady = true
         }
     }
+
+    var playbackPosition by rememberSaveable { mutableStateOf(0L) }
+    var currentWindow by rememberSaveable { mutableStateOf(0) }
+    var playWhenReady by rememberSaveable { mutableStateOf(true) }
 
     DisposableEffect(exoPlayer) {
         val listener = object : Player.Listener {
             override fun onPlaybackStateChanged(state: Int) {
                 isLoading = state == Player.STATE_BUFFERING || state == Player.STATE_IDLE
+                if (isLoading){
+                    playbackPosition = exoPlayer.currentPosition
+                    currentWindow = exoPlayer.currentMediaItemIndex
+                    playWhenReady = exoPlayer.playWhenReady
+                }
             }
             override fun onPlayerError(error: PlaybackException) {
                 showErrorDialog = true
@@ -67,6 +78,10 @@ fun PlayerScreen(navController: NavController, videoUri: String) {
         }
         exoPlayer.addListener(listener)
         onDispose {
+            playbackPosition = exoPlayer.currentPosition
+            currentWindow = exoPlayer.currentMediaItemIndex
+            playWhenReady = exoPlayer.playWhenReady
+
             exoPlayer.removeListener(listener)
             exoPlayer.release()
         }
@@ -81,10 +96,12 @@ fun PlayerScreen(navController: NavController, videoUri: String) {
     }
 
     LaunchedEffect(Unit) {
+        exoPlayer.seekTo(currentWindow, playbackPosition)
+        exoPlayer.playWhenReady = playWhenReady
         while (true) {
             delay(1000)
             val currentTime = System.currentTimeMillis()
-            if (currentTime - lastTouchTime > 4400) {
+            if (currentTime - lastTouchTime > 2000) {
                 isAppBarVisible = false
             }
         }

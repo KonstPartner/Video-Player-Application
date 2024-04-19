@@ -1,15 +1,19 @@
 package com.example.videoplayerapplication.screens
 
 import android.content.Context
+import android.content.pm.ActivityInfo
+import android.content.res.Configuration
 import android.database.Cursor
 import android.net.Uri
 import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
@@ -45,15 +49,21 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.text.ClickableText
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
 import com.example.videoplayerapplication.server.VideoStreamServer
 import com.example.videoplayerapplication.ui.components.BottomAppBar
 import com.example.videoplayerapplication.ui.components.TopAppBar
 import com.example.videoplayerapplication.ui.components.Video
 import com.example.videoplayerapplication.ui.components.getVideos
-import com.example.videoplayerapplication.ui.components.renameVideo
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.delay
 import java.net.NetworkInterface
@@ -107,18 +117,24 @@ fun getLocalIpAddress(): String? {
 @Composable
 fun StorageScreen(navController: NavController) {
     val context = LocalContext.current
-    var searchText by remember { mutableStateOf("") }
-    var searchTextDebounced by remember { mutableStateOf("") }
-    var sortOrder by remember { mutableStateOf(SortOrder.ByName) }
-    var ascending by remember { mutableStateOf(true) }
+    var columns by rememberSaveable { mutableStateOf(1) }
+    var searchText by rememberSaveable { mutableStateOf("") }
+    var searchTextDebounced by rememberSaveable { mutableStateOf("") }
+    var sortOrder by rememberSaveable { mutableStateOf(SortOrder.ByName) }
+    var ascending by rememberSaveable { mutableStateOf(true) }
     val server = remember { mutableStateOf<VideoStreamServer?>(null) }
     val showStreamingWarningDialog = remember { mutableStateOf(false) }
+    val activity = context as? ComponentActivity
+    val clipboardManager = LocalClipboardManager.current
 
-
-
-    LaunchedEffect(searchText) {
+    LaunchedEffect(searchText, server.value) {
         delay(300)
         searchTextDebounced = searchText
+        if (server.value != null) {
+            activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED
+        } else {
+            activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        }
     }
 
     BackHandler {
@@ -146,8 +162,6 @@ fun StorageScreen(navController: NavController) {
         )
     }
 
-    var columns by remember { mutableStateOf(1) }
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -172,9 +186,7 @@ fun StorageScreen(navController: NavController) {
                 }
             )
         },
-        bottomBar = {
-            BottomAppBar()
-        }
+        bottomBar = {}
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
             SearchBar(searchText = searchText, onSearchTextChanged = { searchText = it })
@@ -184,16 +196,26 @@ fun StorageScreen(navController: NavController) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(start = 50.dp, end = 50.dp)
-                        .border(1.dp, Color.Black, RoundedCornerShape(8.dp))
-                        .padding(vertical = 4.dp),
+                        .padding(start = 60.dp, end = 60.dp, bottom = 5.dp)
+                        .border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(8.dp))
+                        .padding(vertical = 5.dp),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(
-                        text = "$url",
-                        color = MaterialTheme.colorScheme.primary,
-                        fontSize = 10.sp
+                    ClickableText(
+                        text = AnnotatedString(url),
+                        style = TextStyle(
+                            color = MaterialTheme.colorScheme.primary,
+                            fontSize = 13.sp,
+                            fontStyle = FontStyle.Italic,
+                            fontFamily = MaterialTheme.typography.bodyLarge.fontFamily,
+                            fontWeight = MaterialTheme.typography.bodyLarge.fontWeight
+                        ),
+                        modifier = Modifier.padding(top = 5.dp, bottom = 10.dp),
+                        onClick = {
+                            clipboardManager.setText(AnnotatedString(url))
+                            Toast.makeText(context, "URL скопирован в буфер обмена", Toast.LENGTH_SHORT).show()
+                        }
                     )
                     Button(
                         onClick = {
@@ -202,13 +224,15 @@ fun StorageScreen(navController: NavController) {
                             Toast.makeText(context, "Передача остановлена", Toast.LENGTH_SHORT)
                                 .show()
                         },
-                        modifier = Modifier.padding(start = 2.dp, end = 2.dp),
+                        modifier = Modifier.padding(start = 2.dp, end = 2.dp).size(width = 150
+                            .dp, height = 30.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Text(
                             text = "Остановить передачу",
-                            color = Color.White
+                            color = Color.White,
+                            style = TextStyle(fontSize = 8.sp)
                         )
                     }
                 }
@@ -240,13 +264,14 @@ fun StorageScreen(navController: NavController) {
 @Composable
 fun VideoItem(video: Video, columns: Int, navController: NavController, context: Context, server: MutableState<VideoStreamServer?>, showStreamingWarningDialog: MutableState<Boolean>) {
     val textStyle = getTextStyleForColumns(columns)
+    val cardHeight = calculateCardHeight(context, columns)
     var showMenu by remember { mutableStateOf(false) }
 
 
     Card(
         modifier = Modifier
             .padding(8.dp)
-            .fillMaxWidth()
+            .height(cardHeight.dp)
             .combinedClickable(
                 onClick = {
                     if (server.value != null) {
@@ -299,7 +324,8 @@ fun VideoItem(video: Video, columns: Int, navController: NavController, context:
                 text = video.title,
                 style = textStyle,
                 modifier = Modifier.padding(horizontal = 4.dp),
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.primary,
+                overflow = TextOverflow.Ellipsis
             )
         }
 
@@ -343,6 +369,23 @@ fun getTextStyleForColumns(columns: Int): TextStyle {
         1 -> MaterialTheme.typography.bodyLarge
         2 -> MaterialTheme.typography.bodyMedium
         else -> MaterialTheme.typography.bodySmall
+    }
+}
+
+fun calculateCardHeight(context: Context, columns: Int): Float {
+    val orientation = context.resources.configuration.orientation
+    return if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+        when (columns) {
+            1 -> 465f
+            2 -> 250f
+            else -> 175f
+        }
+    } else {
+        when (columns) {
+            1 -> 240f
+            2 -> 140f
+            else -> 100f
+        }
     }
 }
 

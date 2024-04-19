@@ -17,8 +17,6 @@ import androidx.core.view.WindowCompat
 
 
 
-// Theme.kt
-
 private val LightColorScheme = lightColorScheme(
     primary = Black,            // Текст
     secondary = White,          // Кнопки
