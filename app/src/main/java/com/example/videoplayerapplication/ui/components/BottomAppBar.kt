@@ -11,12 +11,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun BottomAppBar() {
+fun BottomAppBar(){
+    BottomBar()
+}
+@Composable
+private fun BottomBar() {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(70.dp)
-            .background(color = MaterialTheme.colorScheme.primary)
+            .height(56.dp)
+            .background(color = MaterialTheme.colorScheme.onSecondary)
     ) {}
 }
 

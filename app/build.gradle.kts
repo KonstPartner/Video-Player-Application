@@ -60,6 +60,7 @@ dependencies {
     // ExoPlayer для воспроизведения видео
     implementation("com.google.android.exoplayer:exoplayer-core:2.16.1")
     implementation("com.google.android.exoplayer:exoplayer-ui:2.16.1")
+    implementation("com.google.android.exoplayer:exoplayer-hls:2.16.1")
 
     // Retrofit для сетевых запросов
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
@@ -68,6 +69,10 @@ dependencies {
 
     implementation("androidx.navigation:navigation-compose:2.4.0-beta01")
     implementation("io.coil-kt:coil-compose:1.3.2")
+
+    implementation("androidx.appcompat:appcompat:1.4.1")
+
+    implementation("org.nanohttpd:nanohttpd:2.3.1")
 
 
     // Тестирование

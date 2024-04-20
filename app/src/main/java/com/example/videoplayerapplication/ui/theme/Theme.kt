@@ -15,40 +15,31 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
-// Theme.kt
-private val DarkColorScheme = darkColorScheme(
-    primary = DarkPrimary,
-    onPrimary = DarkText, // Для текста на темно-синем topBar
-    background = DarkBackground,
-    onBackground = DarkIcon, // Для текста на темно-сером фоне
-    // Укажите остальные цвета по необходимости
-)
+
 
 private val LightColorScheme = lightColorScheme(
-    primary = LightPrimary,
-    onPrimary = LightText, // Для текста на синем topBar
-    background = LightBackground,
-    onBackground = LightIcon, // Для текста на белом фоне
-    // Укажите остальные цвета по необходимости
+    primary = Black,            // Текст
+    secondary = White,          // Кнопки
+    background = White,         // Фон
+    onSecondary = LightGray,    // Верхняя/Нижняя панель
 )
 
+
+private val DarkColorScheme = darkColorScheme(
+    primary = White,             // Текст
+    secondary = DarkGray,        // Кнопки
+    background = LightBlack,     //Фон
+    onSecondary = DarkGray,    // Верхняя/Нижняя панель
+)
 
 @Composable
 fun VideoPlayerApplicationTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
+    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
 
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
-    }
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
